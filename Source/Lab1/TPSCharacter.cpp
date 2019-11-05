@@ -7,10 +7,10 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine/World.h"
+#include "TPSWeapon.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "TPSWeapon.h"
 #include "HealthComponent.h"
 #include "Lab1.h"
 #include "TimerManager.h"
@@ -142,7 +142,7 @@ void ATPSCharacter::TakeCover() {
 
 			FHitResult hit;
 			//CHANGE THIS TO COVERTRACECHANNEL
-			if (GetWorld()->LineTraceSingleByChannel(hit, lineTraceStart, lineTraceEnd, ECC_Visibility)) {
+			if (GetWorld()->LineTraceSingleByChannel(hit, lineTraceStart, lineTraceEnd, CoverTraceChannel)) {
 				FVector targetLocation = hit.Location;
 				targetLocation -= OverlappingBoxCollision->GetForwardVector() * GetCapsuleComponent()->GetScaledCapsuleRadius();
 				SetActorLocation(targetLocation);
@@ -160,7 +160,7 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	//CAREFUL: SOME FUNCTIONS ARE PARENT-CLASS-BASED
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATPSCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATPSCharacter::MoveRight);
-	//pitch: up-down, Yaw: Left-right, Roll: rotation along forward axis
+	//pitch: up-down, Yaw: Left-right, Roll: rotation along forward axis(leaning)
 	PlayerInputComponent->BindAxis("LookUp", this, &ACharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookSideWays", this, &ACharacter::AddControllerYawInput);
 	
@@ -174,7 +174,8 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ATPSCharacter::StartZoom);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ATPSCharacter::EndZoom);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATPSCharacter::FireWeapon);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATPSCharacter::StartFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ATPSCharacter::EndFire);
 }
 
 FVector ATPSCharacter::GetPawnViewLocation() const {

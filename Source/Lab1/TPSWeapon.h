@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "TPSWeapon.generated.h"
 
+class UCameraShake;
+
 UCLASS()
 class LAB1_API ATPSWeapon : public AActor
 {
@@ -15,11 +17,13 @@ public:
 	// Sets default values for this actor's properties
 	ATPSWeapon();
 
+	//Firing-related functions. overridable
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void Fire();
-	void StartFire();
-	void EndFire();
-
+	virtual void StartFire();
+	virtual void EndFire();
+	
+	//static mesh component. Public for exchangeability
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkeletalMeshComponent * MeshComp;
 
@@ -55,10 +59,10 @@ protected:
 	FTimerHandle BulletTimer;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	float BaseDamage = 20;
+	float BaseDamage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	float DamageMultiplier = 4;
+	float DamageMultiplier;
 
 public:	
 	// Called every frame

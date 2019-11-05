@@ -6,6 +6,9 @@
 #include "Kismet/GameplayStatics.h" //for damage and particle effects
 #include "Components/SkeletalMeshComponent.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "TimerManager.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
+#include "Lab1.h"
 
 //For debug draw purposes
 int32 DebugDrawWeapons = 0;
@@ -24,6 +27,9 @@ ATPSWeapon::ATPSWeapon()
 	RootComponent = (USceneComponent*)MeshComp;
 
 	TrailEffectParameter = "BeamEnd";
+
+	BaseDamage = 20.0f;
+	DamageMultiplier = 4.0f;
 }
 
 // Called when the game starts or when spawned
@@ -41,8 +47,8 @@ void ATPSWeapon::Tick(float DeltaTime)
 
 void ATPSWeapon::Fire() {
 
-	//create an owner for the weapon
-	AActor* MyOwner = GetOwner();
+	//create an owner for the weapon Originally, it was an Actor, hence the casting
+	APawn* MyOwner = Cast<APawn>(GetOwner());
 
 	if (MyOwner) {
 		//LineTracing requires a range (length)
@@ -53,24 +59,52 @@ void ATPSWeapon::Fire() {
 		FVector destination = EyeLocation + 10000 * EyeRotation.Vector();
 		FVector TrailEnd = destination;
 
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(MyOwner);
+		QueryParams.AddIgnoredActor(this);
+		QueryParams.bTraceComplex = false;
+		QueryParams.bReturnPhysicalMaterial = true;
+
 		FHitResult HitResult;
 		
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, destination, ECC_Visibility)) {
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, destination, WeaponTraceChannel, QueryParams)) {
 			
 			AActor* victim = HitResult.GetActor();
-			UGameplayStatics::ApplyPointDamage(victim, 20.0F, EyeRotation.Vector(), HitResult, MyOwner->GetInstigatorController(), this, damageType);			
+
+			EPhysicalSurface SurfaceType = UPhysicalMaterial::DetermineSurfaceType(Cast<UPhysicalMaterial>(HitResult.PhysMaterial));
+
+			UParticleSystem* ImpactEffectToPlay = NULL;
+			float DamageToApply = BaseDamage;
+
+			switch (SurfaceType) {
+				case Flash_Default:
+					ImpactEffectToPlay = ImpactEffectBlood;
+					break;
+				case Flash_Vulnerable:
+					ImpactEffectToPlay = ImpactEffectBlood;
+					DamageToApply *= DamageMultiplier;
+					break;
+				case Concrete:
+					ImpactEffectToPlay = ImpactEffectConcrete;
+					break;
+				default:
+					ImpactEffectToPlay = ImpactEffectBlood;
+					break;
+			}
+
+			UGameplayStatics::ApplyPointDamage(victim, DamageToApply, EyeRotation.Vector(), HitResult, MyOwner->GetInstigatorController(), this, damageType);			
 			
 			TrailEnd = HitResult.ImpactPoint; //gotta read smoke trail end
-			if (ImpactEffectBlood) {
+			if (ImpactEffectToPlay) {
 				//what happens when it hits. Different effects go here
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffectBlood , HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffectToPlay, HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
 			}
 		}
 
 		FVector MuzzlePosition = MeshComp->GetSocketLocation(MuzzleSocket);
 
 		if (MuzzleEffect) {
-			//fire from muzzle
+			//fire from muzzle. Not 100% sure on why this is "slightly" different from his...
 			UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, (USceneComponent*)MeshComp, MuzzleSocket, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
 		}
 
@@ -86,15 +120,20 @@ void ATPSWeapon::Fire() {
 		if (DebugDrawWeapons > 0) {
 			DrawDebugLine(GetWorld(), EyeLocation, destination, FColor::Cyan, false, 1.0, 0, 2.5f);
 		}
-		
+
+		APlayerController* PlayerController = Cast<APlayerController>(MyOwner->GetController());
+		if (PlayerController) {
+			PlayerController->ClientPlayCameraShake(FireCameraShake);
+		}
 	}
-	
 }
 
-void ATPSWeapon::StartFire()
-{
+void ATPSWeapon::StartFire() {
+
+	GetWorldTimerManager().SetTimer(BulletTimer, this, &ATPSWeapon::Fire, 0.5f, true, 0.0f);
 }
 
-void ATPSWeapon::EndFire()
-{
+void ATPSWeapon::EndFire() {
+
+	GetWorldTimerManager().ClearTimer(BulletTimer);
 }

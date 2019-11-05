@@ -53,6 +53,7 @@ protected:
 	FName WeaponSocketName;
 	ATPSWeapon * CurrentWeapon;
 
+	//Cover settings
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CoverProperties")
 	UBoxComponent* OverlappingBoxCollision;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CoverProperties")
