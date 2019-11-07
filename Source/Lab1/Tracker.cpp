@@ -26,7 +26,7 @@ ATracker::ATracker()
 	RootComponent = MeshComp;
 	MeshComp->SetSimulatePhysics(true);
 	MeshComp->SetCanEverAffectNavigation(false);
-	MoveForce = 1000.0f;
+	MoveForce = 100.0f;
 	bUseVelocityChange = true;
 
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
@@ -35,14 +35,14 @@ ATracker::ATracker()
 	bSelfDamageStarted = false;
 
 	SelfDamageTrigger = CreateDefaultSubobject<USphereComponent>(TEXT("Self Damage Trigger"));
-	SelfDamageTrigger->SetSphereRadius(250);
+	SelfDamageTrigger->SetSphereRadius(250.0f);
 	SelfDamageTrigger->SetupAttachment(RootComponent);
 	SelfDamageTrigger->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SelfDamageTrigger->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	SelfDamageTrigger->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
-	ExplosionRadius = 500;//uu, or cm
-	ExplosionBaseDamage = 50;
+	ExplosionRadius = 500.0f;//uu, or cm
+	ExplosionBaseDamage = 50.0f;
 }
 
 // Called when the game starts or when spawned
@@ -93,7 +93,6 @@ FVector ATracker::GetNextPoint() {
 			return path->PathPoints[1];
 		}
 	}
-
 	return GetActorLocation();
 }
 
@@ -139,9 +138,9 @@ void ATracker::NotifyActorBeginOverlap(AActor* OtherActor) {
 		ATPSCharacter* player = Cast<ATPSCharacter>(OtherActor);
 
 		if (player) {//sets timer to start and loop the "damage self" function
-
+			//consider changing the self-damage ratio (0.5f) and storing it in a UPROPERTY variable
 			GetWorldTimerManager().SetTimer(SelfDamageTimer, this, &ATracker::DamageSelf, 0.5f, true, 0.0f);
-			MoveForce = 0;
+			MoveForce = 0.0f;
 			bSelfDamageStarted = true;
 		}
 	}
