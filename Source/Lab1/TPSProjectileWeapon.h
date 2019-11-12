@@ -24,11 +24,14 @@ protected:
 	void BeginPlay() override;
 
 	//UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void Fire();
+	void Fire();//not sure whether to call override here
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ammo")
 	TSubclassOf<AGrenade> Projectile;
 	AGrenade* Grenade;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Launch Force")
+	float LaunchForce;
 
 private:
 	void Tick(float deltaTime) override;

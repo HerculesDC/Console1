@@ -39,10 +39,17 @@ protected:
 	float MoveForce;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Tracker Movement Properties")
 	bool bUseVelocityChange;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tracker Movement Properties")
+	USoundCue* RollSound;
+	bool bRolling;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tracker Hit Properties")
+	USoundCue* HitSound;
 
 	//Health & timer Parameters
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Tracker Health Properties")
 	UHealthComponent* HealthComp;
+
 	bool bDestroyed;//default false
 	bool bSelfDamageStarted; //default false
 	UFUNCTION()

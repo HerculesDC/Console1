@@ -4,6 +4,8 @@
 #include "TPSProjectileWeapon.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Grenade.h"
 
@@ -28,7 +30,7 @@ void ATPSProjectileWeapon::Fire() {
 		MyOwner->GetActorEyesViewPoint(EyeLocation, EyeRotation);
 
 		//100(cm) should be enough
-		FVector LineEnd = EyeLocation * 100.f * EyeRotation.Vector();
+		FVector LineEnd = EyeLocation + 100.f * EyeRotation.Vector();
 		FVector TrailEnd = LineEnd;
 
 		FCollisionQueryParams QueryParams;
@@ -46,12 +48,19 @@ void ATPSProjectileWeapon::Fire() {
 		if (TrailEffect) {
 
 			UParticleSystemComponent* TrailComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TrailEffect, MuzzlePosition);
+
+			if (TrailComp) {
+				//opted for a single 1m trail
+				TrailComp->SetVectorParameter(TrailEffectParameter, LineEnd);
+			}
 		}
 
 		FActorSpawnParameters spawnParams;
 		spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		spawnParams.Instigator = MyOwner;
 		//spawn grenade
-		Grenade = GetWorld()->SpawnActor<AGrenade>(Projectile, spawnParams);
+		Grenade = GetWorld()->SpawnActor<AGrenade>(Projectile, MuzzlePosition, EyeRotation, spawnParams);
+		Grenade->MeshComp->AddImpulse(LaunchForce * EyeRotation.Vector());
 
 		APlayerController* PlayerController = Cast<APlayerController>(MyOwner->GetController());
 		if (PlayerController) {

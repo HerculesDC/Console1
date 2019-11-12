@@ -7,6 +7,7 @@
 #include "TPSWeapon.generated.h"
 
 class UCameraShake;
+class USoundCue;
 
 UCLASS()
 class LAB1_API ATPSWeapon : public AActor
@@ -63,6 +64,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float DamageMultiplier;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	USoundCue* ShotSound;
 
 public:	
 	// Called every frame

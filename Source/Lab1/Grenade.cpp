@@ -25,15 +25,14 @@ AGrenade::AGrenade()
 void AGrenade::BeginPlay()
 {
 	Super::BeginPlay();
-
-	GetWorldTimerManager().SetTimer(expTimer, this, &AGrenade::Explode, expDelay, false, 0.0f);
+	//the first float indicates loop timing. The one after the boolean introduces delay
+	GetWorldTimerManager().SetTimer(expTimer, this, &AGrenade::Explode, 0.001f, false, expDelay);
 }
 
 // Called every frame
 void AGrenade::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AGrenade::Explode() {
@@ -45,4 +44,5 @@ void AGrenade::Explode() {
 	//you've seen this before, but a refresher: nullptr is damage type, the second this is damage instigator, and the true at the end is "do full damage"
 	//	there's another parameter after the bool, for damage prevention collision channel
 	UGameplayStatics::ApplyRadialDamage(this, expBaseDamage, GetActorLocation(), expRadius, nullptr, IgnoreActors, this, GetInstigatorController(), true);
+	Destroy();
 }

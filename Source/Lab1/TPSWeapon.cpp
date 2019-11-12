@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h" //for damage and particle effects
 #include "Components/SkeletalMeshComponent.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
 #include "TimerManager.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Lab1.h"
@@ -125,6 +126,8 @@ void ATPSWeapon::Fire() {
 		if (PlayerController) {
 			PlayerController->ClientPlayCameraShake(FireCameraShake);
 		}
+
+		UGameplayStatics::SpawnSoundAtLocation(this, ShotSound, MuzzlePosition);
 	}
 }
 

@@ -102,6 +102,7 @@ void ATPSCharacter::MoveRight(float Val) {
 
 	if (bInCover) {
 		
+		//line generating problems, likely due to overlappingboxcollision being set to null. Collision a
 		FVector targetPos = GetActorLocation() + (OverlappingBoxCollision->GetRightVector()*Val*dt);
 		FVector offsetFromCoverCenter = targetPos - OverlappingBoxCollision->GetComponentLocation();
 		

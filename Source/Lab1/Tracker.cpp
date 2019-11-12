@@ -70,6 +70,14 @@ void ATracker::Tick(float DeltaTime)
 		MeshComp->AddForce(force, NAME_None, bUseVelocityChange);
 		DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + force, 20.0f, FColor::Green, false, 2.0f*DeltaTime, 0, 3.0f);
 	}
+
+	bRolling = !GetVelocity().IsNearlyZero(); //may require tolerance adjustments
+
+	//Be careful to reference all your pointeres in blueprints before going crazy with playing
+	if (bRolling && !RollSound->IsLooping()) {
+		//attaches sound to root component and no name point, snaps to target and destroys when component is destroyed
+		UGameplayStatics::SpawnSoundAttached(RollSound, RootComponent, "", GetActorLocation(), EAttachLocation::SnapToTarget, true);
+	}
 }
 
 // Called to bind functionality to input
@@ -101,6 +109,8 @@ void ATracker::SelfDestruct() {
 	if (!bDestroyed) {
 		bDestroyed = true;
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
+		//destroy sound
+		//UGameplayStatics::
 		UGameplayStatics::SpawnSoundAtLocation(this,ExplosionSound, GetActorLocation());
 		TArray<AActor*> IgnoredActors;
 		IgnoredActors.Add(this);
@@ -120,6 +130,7 @@ void ATracker::OnHealthChanged(UHealthComponent* OwingHealthComp, float Health, 
 	}
 	if (MatInstance) {
 		MatInstance->SetScalarParameterValue("LastTimeHit", GetWorld()->TimeSeconds);
+		UGameplayStatics::SpawnSoundAtLocation(this, HitSound, GetActorLocation());
 	}
 	if (Health <= 0) {
 		SelfDestruct();

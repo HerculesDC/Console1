@@ -16,13 +16,14 @@ public:
 	// Sets default values for this actor's properties
 	AGrenade();
 
+	//made public to enable getting in launcher's Fire().
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Grenade Appearance")
+	UStaticMeshComponent* MeshComp;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Grenade Appearance")
-	UStaticMeshComponent* MeshComp;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Explostion Properies")
 	float expDelay;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Explostion Properies")
